@@ -37,3 +37,8 @@ processResources {
         expand 'version':project.version, 'mcversion':project.minecraft.version
     }
 }
+tasks.compileJava {
+    javaCompiler = javaToolchains.compilerFor {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
+}
