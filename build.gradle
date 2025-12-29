@@ -1,7 +1,9 @@
 plugins {
     id 'java'
-    id 'gg.essential.loom' version '0.10.0.+'
-    id 'net.kyori.blossom' version '1.3.0'
+    // SWITCHED: Essential Loom 0.10 -> Architectury Loom 1.7 (Supports Gradle 9)
+    id 'dev.architectury.loom' version '1.7-SNAPSHOT'
+    // UPDATED: Blossom 1.3 -> 2.2.0 (Supports Gradle 9)
+    id 'net.kyori.blossom' version '2.2.0'
 }
 
 group = 'com.futureclient'
@@ -15,25 +17,36 @@ java {
 }
 
 loom {
+    // Architectury Loom configuration for Forge 1.8.9
     forge {
+        // Fixes jar signing/packing for 1.8.9
         pack200Provider = new dev.architectury.pack200.java.Pack200Adapter()
+        
+        // If you use Mixins later, uncomment this:
+        // mixinConfigs = ["mixins.futureclient.json"] 
     }
+
+    // Explicitly set the mapping platform to avoid confusion
+    // silentMojangMappingsLicense() // Uncomment if you switch to Mojang mappings
 }
 
-// These repositories are for YOUR MOD'S dependencies (like Minecraft itself)
 repositories {
     mavenCentral()
     maven { url "https://repo.spongepowered.org/maven/" }
-    // Add these just in case your mod dependencies need them
-    maven { url "https://maven.minecraftforge.net/" }
 }
 
 dependencies {
+    // Minecraft & Forge
     minecraft "com.mojang:minecraft:1.8.9"
     mappings "de.oceanlabs.mcp:mcp_stable:22-1.8.9"
     forge "net.minecraftforge:forge:1.8.9-11.15.1.2318-1.8.9"
 
+    // Libraries
     implementation 'com.google.code.gson:gson:2.8.9'
+    
+    // Mixins (Standard for PvP Clients)
+    compileOnly('org.spongepowered:mixin:0.7.11-SNAPSHOT')
+    annotationProcessor('org.spongepowered:mixin:0.7.11-SNAPSHOT')
 }
 
 processResources {
@@ -43,6 +56,12 @@ processResources {
     filesMatching("mcmod.info") {
         expand "version": project.version, "mcversion": "1.8.9"
     }
+}
+
+// Configures variable replacement (Blossom)
+blossom {
+    replaceToken('${version}', project.version)
+    replaceToken('${mcversion}', "1.8.9")
 }
 
 tasks.withType(JavaCompile).configureEach {
