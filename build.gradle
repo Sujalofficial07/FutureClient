@@ -1,8 +1,7 @@
 plugins {
     id "java"
-    // FIX: Uses Architectury Loom (Compatible with Gradle 9, unlike Essential Loom 0.10)
-    id "dev.architectury.loom" version "1.7-SNAPSHOT"
-    // FIX: Uses the modern Shadow plugin (Compatible with Gradle 9)
+    // UPDATED: Version 1.13+ supports Gradle 9's new API
+    id "dev.architectury.loom" version "1.13-SNAPSHOT"
     id "com.gradleup.shadow" version "8.3.0"
 }
 
@@ -10,30 +9,22 @@ version = "1.0.0"
 group = "com.futureclient"
 archivesBaseName = "FutureClient"
 
-// 1. JAVA COMPATIBILITY
-// This forces the code to compile for Java 8 (Minecraft 1.8.9 requirement)
-// even if you are running Gradle with Java 21.
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(8)
     }
 }
 
-// 2. MINECRAFT SETUP
 loom {
     forge {
-        // Fixes legacy jar signing/packing issues
         pack200Provider = new dev.architectury.pack200.java.Pack200Adapter()
-        
-        // UNCOMMENT if you add a mixin file later:
-        // mixinConfigs = ["mixins.futureclient.json"]
+        // mixinConfigs = ["mixins.futureclient.json"] 
     }
 }
 
-// 3. DEPENDENCY CONFIGURATION
 configurations {
-    shade // Creates the 'shade' config you asked for
-    implementation.extendsFrom(shade) // Adds shaded libs to the classpath
+    shade
+    implementation.extendsFrom(shade)
 }
 
 repositories {
@@ -42,19 +33,13 @@ repositories {
 }
 
 dependencies {
-    // --- MINECRAFT ---
     minecraft "com.mojang:minecraft:1.8.9"
     mappings "de.oceanlabs.mcp:mcp_stable:22-1.8.9"
     forge "net.minecraftforge:forge:1.8.9-11.15.1.2318-1.8.9"
 
-    // --- LIBRARIES ---
-    // Example: shade "com.example:mylib:1.0.0"
-    
-    // GSON is provided by MC, but good to have for compile safety
     implementation "com.google.code.gson:gson:2.8.9"
 }
 
-// 4. RESOURCE PROCESSING (mcmod.info)
 processResources {
     inputs.property "version", project.version
     inputs.property "mcversion", "1.8.9"
@@ -62,23 +47,19 @@ processResources {
     filesMatching("mcmod.info") {
         expand "version": project.version, "mcversion": "1.8.9"
     }
-    
     rename '(.+_at.cfg)', 'META-INF/$1'
 }
 
-// 5. SHADOW JAR (Building the client)
 shadowJar {
-    archiveClassifier.set("") // Ensures the output jar is named "FutureClient-1.0.0.jar"
+    archiveClassifier.set("")
     configurations = [project.configurations.shade]
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     
     dependencies {
-        // Exclude things provided by Minecraft to keep file size down
         exclude(dependency("com.google.code.gson:gson"))
     }
 }
 
-// Ensure running 'build' creates the shadow jar
 tasks.build.dependsOn shadowJar
 
 tasks.withType(JavaCompile).configureEach {
