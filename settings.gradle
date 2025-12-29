@@ -1,0 +1,10 @@
+pluginManagement {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+        maven { url = "https://repo.essential.gg/repository/maven-public/" }
+        maven { url = "https://maven.architectury.dev/" }
+    }
+}
+
+rootProject.name = 'FutureClient'
