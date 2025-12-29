@@ -1,17 +1,15 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import net.fabricmc.loom.task.RemapJarTask
 
 plugins {
     id 'idea'
     id 'java'
-    id 'gg.essential.loom' version '0.10.0.5'
+    id 'gg.essential.loom' version '0.10.2'
     id 'dev.architectury.architectury-pack200' version '0.1.3'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
-    id 'org.jetbrains.kotlin.jvm' version '1.9.0'
 }
 
 /* =======================
-   Constants
+   Project properties
    ======================= */
 
 def baseGroup = project.property("baseGroup")
@@ -20,23 +18,12 @@ def modid = project.property("modid")
 def mixinGroup = "${baseGroup}.mixin"
 
 /* =======================
-   Java Toolchain
+   Java Toolchain (MC 1.8.9)
    ======================= */
 
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(8)
-    }
-}
-
-/* =======================
-   Source sets
-   ======================= */
-
-sourceSets {
-    main {
-        java.srcDir "src/main/kotlin"
-        output.resourcesDir = java.classesDirectory.get().asFile
     }
 }
 
@@ -49,8 +36,6 @@ repositories {
     mavenLocal()
     maven { url "https://repo.spongepowered.org/maven/" }
     maven { url "https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1" }
-    maven { url "https://repo.nea.moe/releases" }
-    maven { url "https://maven.notenoughupdates.org/releases" }
 }
 
 /* =======================
@@ -78,24 +63,14 @@ dependencies {
     mappings "de.oceanlabs.mcp:mcp_stable:22-1.8.9"
     forge "net.minecraftforge:forge:1.8.9-11.15.1.2318-1.8.9"
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-
-    shadowImpl("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3") {
-        exclude group: "org.jetbrains.kotlin"
-    }
-
+    // Mixins
     shadowImpl("org.spongepowered:mixin:0.7.11-SNAPSHOT") {
         transitive = false
     }
     annotationProcessor "org.spongepowered:mixin:0.8.5-SNAPSHOT"
 
+    // Dev login helper (optional)
     runtimeOnly "me.djtheredstoner:DevAuth-forge-legacy:1.1.2"
-
-    shadowImpl libs.libautoupdate
-    shadowImpl "org.jetbrains.kotlin:kotlin-reflect:1.9.0"
-
-    shadowModImpl libs.moulconfig
-    devenvMod variantOf(libs.moulconfig) { classifier("test") }
 }
 
 /* =======================
@@ -106,7 +81,6 @@ loom {
     launchConfigs {
         client {
             property "mixin.debug", "true"
-            property "asmhelper.verbose", "true"
             arg "--tweakClass", "org.spongepowered.asm.launch.MixinTweaker"
             arg "--mods", configurations.devenvMod.resolve().collect {
                 it.relativeTo(file("run")).path
@@ -132,19 +106,6 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = "UTF-8"
 }
 
-tasks.withType(Jar).configureEach {
-    archiveBaseName.set(modid)
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    manifest {
-        attributes(
-            "FMLCorePluginContainsFMLMod": "true",
-            "ForceLoadAsMod": "true",
-            "TweakClass": "org.spongepowered.asm.launch.MixinTweaker",
-            "MixinConfigs": "mixins.${modid}.json"
-        )
-    }
-}
-
 tasks.processResources {
     inputs.property "version", project.version
     inputs.property "mcversion", mcVersion
@@ -158,21 +119,18 @@ tasks.processResources {
     rename '(.+_at.cfg)', 'META-INF/$1'
 }
 
-tasks.register("remapJar", RemapJarTask) {
-    dependsOn tasks.shadowJar
-    archiveClassifier.set("")
-    from tasks.shadowJar
-    input.set(tasks.shadowJar.archiveFile)
-}
-
 tasks.shadowJar {
     archiveClassifier.set("all-dev")
     destinationDirectory.set(layout.buildDirectory.dir("badjars"))
     configurations = [configurations.shadowImpl, configurations.shadowModImpl]
     exclude "META-INF/versions/**"
+}
 
-    relocate "io.github.moulberry.moulconfig", "${baseGroup}.deps.moulconfig"
-    relocate "moe.nea.libautoupdate", "${baseGroup}.deps.libautoupdate"
+tasks.register("remapJar", RemapJarTask) {
+    dependsOn tasks.shadowJar
+    archiveClassifier.set("")
+    from tasks.shadowJar
+    input.set(tasks.shadowJar.archiveFile)
 }
 
 tasks.jar {
@@ -182,8 +140,4 @@ tasks.jar {
 
 tasks.assemble {
     dependsOn tasks.remapJar
-}
-
-tasks.withType(KotlinCompile).configureEach {
-    kotlinOptions.jvmTarget = "1.8"
 }
