@@ -1,0 +1,36 @@
+name: Build FutureClient
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 8
+      uses: actions/setup-java@v4
+      with:
+        java-version: '8'
+        distribution: 'temurin'
+
+    - name: Grant Execute Permission to Gradlew
+      run: chmod +x gradlew
+
+    - name: Setup Forge Workspace
+      run: ./gradlew setupDecompWorkspace
+
+    - name: Build with ShadowJar
+      run: ./gradlew shadowJar
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: FutureClient-Jar
+        path: build/libs/FutureClient-*-all.jar
