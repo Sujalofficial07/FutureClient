@@ -19,6 +19,8 @@ class ModuleManager {
         modules.add(FPSReducer())
         modules.add(ParticleOptimizations())
         modules.add(CustomMenuModule())
+        modules.add(Velocity())
+        modules.add(OldAnimations())
     }
 
     fun getModules(): List<Module> = modules
