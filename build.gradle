@@ -1,25 +1,30 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'org.jetbrains.kotlin.jvm' version '1.9.22'
+}
+
 buildscript {
     repositories {
         mavenCentral()
-        maven { url = "https://files.minecraftforge.net/maven" }
-        maven { url = "https://repo.spongepowered.org/maven" }
+        maven { url = "https://maven.anatawa12.com/repo/" }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.1-SNAPSHOT'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.0"
-        classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.4'
+        classpath 'com.anatawa12.forge:ForgeGradle:1.2-1.0.+'
     }
 }
 
-apply plugin: 'net.minecraftforge.gradle.forge'
-apply plugin: 'kotlin'
-apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'com.anatawa12.forge'
 
 version = "1.0"
 group = "com.futureclient"
 archivesBaseName = "FutureClient"
 
-sourceCompatibility = targetCompatibility = 1.8
+// THE MAGIC FIX: Runs on Java 21, Compiles for Java 8
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
+}
 
 minecraft {
     version = "1.8.9-11.15.1.1722"
@@ -33,13 +38,34 @@ repositories {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.6.0"
+    // Kotlin StdLib for JDK 8
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.22"
 }
 
+// Compile Kotlin to Java 8 Bytecode
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+
+// Shadow Kotlin into the Jar so it works on Pojav/Vanilla
 shadowJar {
-    classifier = ''
+    archiveClassifier.set('all')
     configurations = [project.configurations.implementation]
+    
+    // Relocate to avoid conflicts with other Kotlin mods
     relocate 'kotlin', 'com.futureclient.shadow.kotlin'
+    relocate 'org.jetbrains', 'com.futureclient.shadow.jetbrains'
+    
+    exclude 'module-info.class'
+    exclude 'META-INF/versions/**'
+    exclude 'META-INF/**.kotlin_module'
 }
 
 reobf {
