@@ -1,0 +1,16 @@
+[
+{
+  "modid": "futureclient",
+  "name": "FutureClient",
+  "description": "High performance PvP Client",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Dev"],
+  "credits": "Forge, Hypixel Community",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
