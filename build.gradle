@@ -1,6 +1,18 @@
+// 1. BUILDSCRIPT BLOCK (Must be first!)
+// This downloads the Pack200 library so we can use 'Pack200Adapter' later in the script.
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { url "https://maven.architectury.dev/" }
+    }
+    dependencies {
+        classpath "dev.architectury:pack200-java-adapter:1.0.1"
+    }
+}
+
+// 2. PLUGINS
 plugins {
     id "java"
-    // UPDATED: Version 1.13+ supports Gradle 9's new API
     id "dev.architectury.loom" version "1.13-SNAPSHOT"
     id "com.gradleup.shadow" version "8.3.0"
 }
@@ -9,19 +21,26 @@ version = "1.0.0"
 group = "com.futureclient"
 archivesBaseName = "FutureClient"
 
+// 3. JAVA TOOLCHAIN
+// Compiles to Java 8 (required for 1.8.9) even if running Gradle on Java 21
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(8)
     }
 }
 
+// 4. MINECRAFT CONFIGURATION
 loom {
     forge {
+        // This line caused your error. Now it will work because of the 'buildscript' block above.
         pack200Provider = new dev.architectury.pack200.java.Pack200Adapter()
-        // mixinConfigs = ["mixins.futureclient.json"] 
+        
+        // Uncomment if you add Mixins later
+        // mixinConfigs = ["mixins.futureclient.json"]
     }
 }
 
+// 5. SHADING SETUP (As you requested)
 configurations {
     shade
     implementation.extendsFrom(shade)
@@ -33,13 +52,18 @@ repositories {
 }
 
 dependencies {
+    // Minecraft & Forge
     minecraft "com.mojang:minecraft:1.8.9"
     mappings "de.oceanlabs.mcp:mcp_stable:22-1.8.9"
     forge "net.minecraftforge:forge:1.8.9-11.15.1.2318-1.8.9"
 
+    // Libraries
+    // shade "com.example:library:1.0.0" // Example of how to shade
+    
     implementation "com.google.code.gson:gson:2.8.9"
 }
 
+// 6. RESOURCE REPLACEMENT
 processResources {
     inputs.property "version", project.version
     inputs.property "mcversion", "1.8.9"
@@ -50,8 +74,9 @@ processResources {
     rename '(.+_at.cfg)', 'META-INF/$1'
 }
 
+// 7. SHADOW JAR TASK
 shadowJar {
-    archiveClassifier.set("")
+    archiveClassifier.set("") // Output: FutureClient-1.0.0.jar
     configurations = [project.configurations.shade]
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     
