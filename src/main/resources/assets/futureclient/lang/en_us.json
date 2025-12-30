@@ -1,0 +1,15 @@
+{
+  "category.futureclient": "FutureClient",
+  "key.futureclient.gui": "Open FutureClient GUI",
+  "futureclient.module.keystrokes": "Keystrokes",
+  "futureclient.module.cps": "CPS Counter",
+  "futureclient.module.fps": "FPS Display",
+  "futureclient.module.ping": "Ping Display",
+  "futureclient.module.coordinates": "Coordinates",
+  "futureclient.module.togglesprint": "Toggle Sprint",
+  "futureclient.module.oldanimations": "Old Animations",
+  "futureclient.module.crosshair": "Custom Crosshair",
+  "futureclient.module.zoom": "Zoom",
+  "futureclient.module.particlecontrol": "Particle Control",
+  "futureclient.module.entityculling": "Entity Culling"
+}
