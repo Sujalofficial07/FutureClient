@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "futureclient",
+  "version": "${version}",
+  "name": "FutureClient",
+  "description": "A high-performance PvP client for Minecraft 1.20.1",
+  "authors": [
+    "FutureClient Team"
+  ],
+  "contact": {
+    "homepage": "https://github.com/yourusername/futureclient",
+    "sources": "https://github.com/yourusername/futureclient"
+  },
+  "license": "MIT",
+  "icon": "assets/futureclient/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.futureclient.FutureClient"
+    ]
+  },
+  "mixins": [
+    "futureclient.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.15.0",
+    "fabric-api": "*",
+    "minecraft": "1.20.1",
+    "java": ">=17"
+  },
+  "suggests": {
+    "sodium": "*",
+    "lithium": "*",
+    "phosphor": "*"
+  }
+}
